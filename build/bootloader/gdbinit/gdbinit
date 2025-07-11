@@ -1,0 +1,2 @@
+source /home/sam/esp/projects/Project/20250711/Real-Time-Project/build/bootloader/gdbinit/symbols
+source /home/sam/esp/projects/Project/20250711/Real-Time-Project/build/bootloader/gdbinit/connect

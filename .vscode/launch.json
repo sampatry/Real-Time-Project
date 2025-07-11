@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/sam/esp/projects/Project/20250711/Real-Time-Project/Real-Time-Project/main",
-      "program": "/home/sam/esp/projects/Project/20250711/Real-Time-Project/Real-Time-Project/main/build/Debug/outDebug",
+      "cwd": "{workspaceFolder}/Real-Time-Project/Real-Time-Project/main",
+      "program": "${workspaceFolder}/Real-Time-Project/main/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
