@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "Real-Time-Project",
-    "project_version":    "c044c6f-dirty",
+    "project_version":    "a8d512a-dirty",
     "project_path":       "/home/sam/esp/projects/Project/20250711/Real-Time-Project",
     "idf_path":           "/home/sam/esp/esp-idf",
     "build_dir":          "/home/sam/esp/projects/Project/20250711/Real-Time-Project/build",
@@ -1195,7 +1195,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/home/sam/esp/projects/Project/20250711/Real-Time-Project/build/esp-idf/main/libmain.a",
-            "sources": [ "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/Real-Time-Project.c" ],
+            "sources": [ "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/pid.c", "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/Kalman_filter.c", "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/mpu6050_v2.c", "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/PWM_write.c", "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/PWM_read.c", "/home/sam/esp/projects/Project/20250711/Real-Time-Project/main/Real-Time-Project.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
