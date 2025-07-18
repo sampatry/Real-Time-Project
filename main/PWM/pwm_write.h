@@ -14,9 +14,11 @@
 extern const char *TAG_PWM_LEDC;
 
 typedef enum {
-    NOT_CONFIGURED = false,
-    CONFIGURED = true,
-} Configuration;
+    PWM_NOT_CONFIGURED = false,
+    PWM_CONFIGURED = true
+} pwm_config_state_t;
+
+
 
 // Timer to output the PWM signal
 void PWM_output_update(TimerHandle_t xTimer);

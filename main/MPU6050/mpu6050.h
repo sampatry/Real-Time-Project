@@ -23,9 +23,10 @@
 extern const char *TAG_MPU6050;
 
 typedef enum {
-    NOT_CONFIGURED = false,
-    CONFIGURED = true,
-} Configuration;
+    MPU6050_NOT_CONFIGURED = false,
+    MPU6050_CONFIGURED = true
+} mpu6050_config_state_t;
+
 
 typedef struct {
     float accel_x, accel_y, accel_z;

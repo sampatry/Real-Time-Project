@@ -8,9 +8,11 @@
 #include <inttypes.h>
 
 typedef enum {
-    NOT_CONFIGURED = false,
-    CONFIGURED = true,
-} Configuration;
+    PID_NOT_CONFIGURED = false,
+    PID_CONFIGURED = true
+} pid_config_state_t;
+
+
 
 extern const char *TAG_pid;
 

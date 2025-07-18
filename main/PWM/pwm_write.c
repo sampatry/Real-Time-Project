@@ -3,11 +3,11 @@
 const char *TAG_PWM_LEDC = "PWM_OUT"; // Tag for identifying LOGI messages
 
 static QueueHandle_t pwm_output_queue = NULL; // Queue for sending pwm signal to pwm output
-static bool PWM_SETUP = NOT_CONFIGURED;
+static bool PWM_SETUP = PWM_NOT_CONFIGURED;
 
 // Timer function to get and output the PWM signal
 void PWM_output_update(TimerHandle_t xTimer) {
-    if (PWM_SETUP == NOT_CONFIGURED){
+    if (PWM_SETUP == PWM_NOT_CONFIGURED){
         ESP_LOGE(TAG_PWM_LEDC, "Not properly set up: %d / 2 configured", PWM_SETUP); // Return immedietly if the pwm output is not fully configured
         return;
     }
@@ -48,6 +48,6 @@ void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO, QueueHandle_t receive_queue) 
 
     pwm_output_queue = receive_queue;
 
-    PWM_SETUP = CONFIGURED;
+    PWM_SETUP = PWM_CONFIGURED;
     return;
 }

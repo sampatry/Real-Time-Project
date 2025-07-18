@@ -5,7 +5,7 @@
 const char *TAG_Kalman = "Kalman Filter";
 
 static kalman_filter_t kf;
-static bool KALMAN_FILTER = NOT_CONFIGURED;
+static bool KALMAN_FILTER = KALMAN_NOT_CONFIGURED;
 static QueueHandle_t raw_imu_queue = NULL;
 static QueueHandle_t tilt_angle_queue = NULL;
 
@@ -18,7 +18,7 @@ void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float ini
     kf.P[0][1] = 0.0f;
     kf.P[1][0] = 0.0f;
     kf.P[1][1] = 0.0f;
-    KALMAN_FILTER = CONFIGURED;
+    KALMAN_FILTER = KALMAN_CONFIGURED;
 }
 
 static void kalman_filter_update(float angle_measured, float rate_measured, float dt) {
@@ -49,7 +49,7 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
 }
 
 void kalman_filter_step(float dt) {
-    if (KALMAN_FILTER == NOT_CONFIGURED){
+    if (KALMAN_FILTER == KALMAN_NOT_CONFIGURED){
         ESP_LOGE(TAG_Kalman, "Not properly set up: %d / 1 configured", KALMAN_FILTER); // Return immedietly if the kalman filter is not fully configured
         return;
     }

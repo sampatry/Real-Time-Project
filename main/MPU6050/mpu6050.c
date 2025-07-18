@@ -11,7 +11,7 @@ static const float gyro_conv[4]        = {131.0, 65.5, 32.8, 16.4};
 static uint8_t current_accel_scale = 1;
 static uint8_t current_gyro_scale  = 1;
 
-static bool IMU_SETUP = NOT_CONFIGURED;
+static bool IMU_SETUP = MPU6050_NOT_CONFIGURED;
 
 static QueueHandle_t raw_imu_queue = NULL;
 
@@ -63,12 +63,12 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
         ESP_LOGE(TAG_MPU6050, "Failed to set scale");
         return ESP_FAIL;
     }
-    IMU_SETUP=CONFIGURED;
+    IMU_SETUP=MPU6050_CONFIGURED;
     return ESP_OK;
 }
 
 void IMU_get_data(TimerHandle_t xTimer) {
-    if (IMU_SETUP == NOT_CONFIGURED){
+    if (IMU_SETUP == MPU6050_NOT_CONFIGURED){
         ESP_LOGE(TAG_MPU6050, "Not properly set up: %d / 2 configured", IMU_SETUP); // Return immedietly if the mpu6050 is not fully configured
         return;
     }
