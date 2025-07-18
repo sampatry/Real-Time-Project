@@ -10,59 +10,15 @@ static const float gyro_conv[4]        = {131.0, 65.5, 32.8, 16.4};
 
 static uint8_t current_accel_scale = 1;
 static uint8_t current_gyro_scale  = 1;
-static int configured = 0;
+
+static int IMU_SETUP = NOT_CONFIGURED;
 
 static QueueHandle_t raw_imu_queue = NULL;
 
-void IMU_set_send_queue(QueueHandle_t queue) {
-    raw_imu_queue = queue;
-    configured++;
-}
-
-void IMU_get_data(TimerHandle_t xTimer) {
-    if (!(configured == 2)){
-        ESP_LOGE(TAG_MPU6050, "Not properly set up: %d / 2 configured", configured); // Return immedietly if the mpu6050 is not fully configured
-        return;
-    }
-    
-    uint8_t reg = MPU6050_REG_ACCEL_XOUT_H;
-    uint8_t raw_data[14];
-
-    if (i2c_master_transmit_receive(mpu6050_handle, &reg, 1, raw_data, sizeof(raw_data), -1) == ESP_OK) {
-        // Convert raw to physical values
-        mpu6050_data_t imu_data_out;
-
-        int16_t ax = (raw_data[0] << 8) | raw_data[1];
-        int16_t ay = (raw_data[2] << 8) | raw_data[3];
-        int16_t az = (raw_data[4] << 8) | raw_data[5];
-        int16_t temp_raw = (raw_data[6] << 8) | raw_data[7];
-        int16_t gx = (raw_data[8] << 8) | raw_data[9];
-        int16_t gy = (raw_data[10] << 8) | raw_data[11];
-        int16_t gz = (raw_data[12] << 8) | raw_data[13];
-        // Convert to G's
-        imu_data_out.accel_x = ax / accel_conv[current_accel_scale - 1] - 0.13f; //subtract to correct systematic error from testing
-        imu_data_out.accel_y = ay / accel_conv[current_accel_scale - 1] - 0.02f;
-        imu_data_out.accel_z = az / accel_conv[current_accel_scale - 1] - 0.1f;
-        // Convert to deg/s
-        imu_data_out.gyro_x = gx / gyro_conv[current_gyro_scale - 1];
-        imu_data_out.gyro_y = gy / gyro_conv[current_gyro_scale - 1];
-        imu_data_out.gyro_z = gz / gyro_conv[current_gyro_scale - 1];
-
-        imu_data_out.temperature = (temp_raw / 340.0f) + 36.53f;
-
-        xQueueSend(raw_imu_queue, &imu_data_out, 0); //sends raw IMU data to the queue
-
-        // Debug output
-        ESP_LOGI(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f | Temp: %.2f°C", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z, imu_data_out.temperature);
-
-    } else {
-        ESP_LOGE(TAG_MPU6050, "Failed to read from MPU6050");
-    }
-}
-
-esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale) {
+esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t queue) {
     current_accel_scale = accel_scale;
     current_gyro_scale  = gyro_scale;
+    raw_imu_queue = queue;
 
     if (accel_scale < 1 || accel_scale > 4 || gyro_scale < 1 || gyro_scale > 4) {
         ESP_LOGE(TAG_MPU6050, "Invalid scale values");
@@ -107,6 +63,47 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale) {
         ESP_LOGE(TAG_MPU6050, "Failed to set scale");
         return ESP_FAIL;
     }
-    configured++;
+    IMU_SETUP=CONFIGURED;
     return ESP_OK;
+}
+
+void IMU_get_data(TimerHandle_t xTimer) {
+    if (IMU_SETUP == NOT_CONFIGURED){
+        ESP_LOGE(TAG_MPU6050, "Not properly set up: %d / 2 configured", IMU_SETUP); // Return immedietly if the mpu6050 is not fully configured
+        return;
+    }
+    
+    uint8_t reg = MPU6050_REG_ACCEL_XOUT_H;
+    uint8_t raw_data[14];
+
+    if (i2c_master_transmit_receive(mpu6050_handle, &reg, 1, raw_data, sizeof(raw_data), -1) == ESP_OK) {
+        // Convert raw to physical values
+        mpu6050_data_t imu_data_out;
+
+        int16_t ax = (raw_data[0] << 8) | raw_data[1];
+        int16_t ay = (raw_data[2] << 8) | raw_data[3];
+        int16_t az = (raw_data[4] << 8) | raw_data[5];
+        int16_t temp_raw = (raw_data[6] << 8) | raw_data[7];
+        int16_t gx = (raw_data[8] << 8) | raw_data[9];
+        int16_t gy = (raw_data[10] << 8) | raw_data[11];
+        int16_t gz = (raw_data[12] << 8) | raw_data[13];
+        // Convert to G's
+        imu_data_out.accel_x = ax / accel_conv[current_accel_scale - 1] - 0.13f; //subtract to correct systematic error from testing
+        imu_data_out.accel_y = ay / accel_conv[current_accel_scale - 1] - 0.02f;
+        imu_data_out.accel_z = az / accel_conv[current_accel_scale - 1] - 0.1f;
+        // Convert to deg/s
+        imu_data_out.gyro_x = gx / gyro_conv[current_gyro_scale - 1];
+        imu_data_out.gyro_y = gy / gyro_conv[current_gyro_scale - 1];
+        imu_data_out.gyro_z = gz / gyro_conv[current_gyro_scale - 1];
+
+        imu_data_out.temperature = (temp_raw / 340.0f) + 36.53f;
+
+        xQueueSend(raw_imu_queue, &imu_data_out, 0); //sends raw IMU data to the queue
+
+        // Debug output
+        ESP_LOGI(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f | Temp: %.2f°C", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z, imu_data_out.temperature);
+
+    } else {
+        ESP_LOGE(TAG_MPU6050, "Failed to read from MPU6050");
+    }
 }

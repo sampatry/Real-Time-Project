@@ -21,7 +21,7 @@ void PWM_output_update(TimerHandle_t xTimer) {
     static int32_t pulse_width_out_us;
     if (xQueueReceive(pwm_output_queue, &pulse_width_out_us, 0) == pdPASS){
         ESP_LOGI(TAG_PWM_LEDC, "PWM Pulse Width Output: %" PRId32 " us", pulse_width_out_us);
-        uint32_t duty = (pulse_width_out_us * 32767) / 20000;
+        uint32_t duty = (pulse_width_out_us * ((1 << LEDC_TIMER_15_BIT) - 1)) / 20000; //currently setup for servo!!
         ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
         ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
     }

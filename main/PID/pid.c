@@ -1,7 +1,7 @@
 #include "pid.h"
 
 const char *TAG_pid = "PID calc";
-static int configured = 0;
+static bool PID_SETUP = NOT_CONFIGURED;
 
 // PID parameters (control tuning parameters)
 static float Kp = 30.0f;
@@ -14,19 +14,17 @@ static float last_error = 0.0f;
 static QueueHandle_t tilt_angle_queue = NULL; // Queue for receiving tilt angle from kalman
 static QueueHandle_t pwm_output_queue = NULL; // Queue for sending pwm signal to pwm output
 
-void pid_set_receive_queue(QueueHandle_t queue1) {
-    tilt_angle_queue = queue1;
-    configured++;
+void pid_config(QueueHandle_t send_queue, QueueHandle_t receive_queue){
+    tilt_angle_queue = send_queue;
+    pwm_output_queue = receive_queue;
+    PID_SETUP = CONFIGURED;
 }
-void pid_set_send_queue(QueueHandle_t queue2) {
-    pwm_output_queue = queue2;
-    configured++;
-}
+
 
 // PID control from angle to PWM duty
 void pid_compute(float setpoint) {
-    if (!(configured == 2)){
-        ESP_LOGE(TAG_pid, "Not properly set up: %d / 2 configured", configured); // Return immedietly if the pid is not fully configured
+    if (PID_SETUP == NOT_CONFIGURED){
+        ESP_LOGE(TAG_pid, "Not properly set up: %d / 2 configured", PID_SETUP); // Return immedietly if the pid is not fully configured
         return;
     }
 

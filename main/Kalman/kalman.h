@@ -7,6 +7,11 @@
 #include <math.h> // For use of atan2f
 #include "esp_log.h"
 
+typedef enum {
+    NOT_CONFIGURED = false,
+    CONFIGURED = true,
+} Configuration;
+
 extern const char *TAG_Kalman;
 
 typedef struct {
@@ -16,9 +21,7 @@ typedef struct {
     float P[2][2];    // Error covariance matrix
 } kalman_filter_t;
 
-void kalman_filter_set_receive_queue(QueueHandle_t queue1);
-void kalman_filter_set_send_queue(QueueHandle_t queue2);
-void kalman_filter_config(float initial_angle);
+void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float initial_angle);
 void kalman_filter_step(float dt);
 
 #endif
