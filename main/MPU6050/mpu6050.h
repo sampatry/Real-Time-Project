@@ -33,7 +33,7 @@ typedef struct {
     float temperature;
 } mpu6050_data_t;
 
-esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale);
+esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t queue);
 
 void IMU_get_data(TimerHandle_t xTimer);
 

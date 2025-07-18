@@ -11,7 +11,7 @@ static const float gyro_conv[4]        = {131.0, 65.5, 32.8, 16.4};
 static uint8_t current_accel_scale = 1;
 static uint8_t current_gyro_scale  = 1;
 
-static int IMU_SETUP = NOT_CONFIGURED;
+static bool IMU_SETUP = NOT_CONFIGURED;
 
 static QueueHandle_t raw_imu_queue = NULL;
 

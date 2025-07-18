@@ -13,13 +13,15 @@
 
 extern const char *TAG_PWM_LEDC;
 
-// Function to config the queue to read from
-void pwm_set_receive_queue(QueueHandle_t queue1);
+typedef enum {
+    NOT_CONFIGURED = false,
+    CONFIGURED = true,
+} Configuration;
 
 // Timer to output the PWM signal
 void PWM_output_update(TimerHandle_t xTimer);
 
 // Function to initialize PWM output
-void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO);
+void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO, QueueHandle_t receive_queue);
 
 #endif
