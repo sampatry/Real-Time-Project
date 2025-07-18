@@ -1,4 +1,4 @@
-/* * Data converted from /home/sam/esp/projects/Project/20250711/Real-Time-Project/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from /home/sam/esp/projects/final-project/20250718/Real-Time-Project/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 #if !defined (__APPLE__) && !defined (__linux__)
@@ -4386,3 +4386,7 @@ _binary_x509_crt_bundle_end: /* for objcopy compatibility */
 .global x509_crt_bundle_length
 x509_crt_bundle_length:
 .long 69876
+
+#if defined (__linux__)
+.section .note.GNU-stack,"",@progbits
+#endif

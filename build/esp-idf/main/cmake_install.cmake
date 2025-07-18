@@ -1,4 +1,4 @@
-# Install script for directory: /home/sam/esp/projects/Project/20250711/Real-Time-Project/main
+# Install script for directory: /home/sam/esp/projects/final-project/20250718/Real-Time-Project/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
