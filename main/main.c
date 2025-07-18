@@ -5,14 +5,6 @@
 #include "kalman.h"
 #include "pid.h"
 
-void app_main(void)
-{
-    printf("Hello World!\n");
-}
-
-/*
-
-
 #define accel_scale 1
 #define gyro_scale 1
 
@@ -79,4 +71,3 @@ void app_main(void)
     xTaskCreate(KalmanTask, "Kalman Update", 2048, NULL, 3, NULL);
     xTaskCreate(pidTask, "PID_Task", 2048, NULL, 3, NULL);
 }
-*/
