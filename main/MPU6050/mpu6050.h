@@ -22,16 +22,20 @@
 
 extern const char *TAG_MPU6050;
 
+typedef enum {
+    MPU6050_NOT_CONFIGURED = false,
+    MPU6050_CONFIGURED = true
+} mpu6050_config_state_t;
+
+
 typedef struct {
     float accel_x, accel_y, accel_z;
     float gyro_x, gyro_y, gyro_z;
     float temperature;
 } mpu6050_data_t;
 
-void IMU_set_send_queue(QueueHandle_t queue);
+esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t queue);
 
 void IMU_get_data(TimerHandle_t xTimer);
-
-esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale);
 
 #endif

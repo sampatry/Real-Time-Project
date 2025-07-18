@@ -9,8 +9,8 @@
         "mpu6050.h": "c",
         "stdio.h": "c"
     },
-    "idf.espIdfPath": "/home/sam/esp/esp-idf",
-    "idf.toolsPath": "/home/sam/.espressif",
+    "idf.espIdfPath": "/home/dylan/esp/esp-idf",
+    "idf.toolsPath": "/home/dylan/.espressif",
     "idf.pythonInstallPath": "/usr/bin/python3",
     "idf.port": "/dev/ttyUSB0"
 }

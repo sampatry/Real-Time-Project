@@ -5,28 +5,20 @@
 const char *TAG_Kalman = "Kalman Filter";
 
 static kalman_filter_t kf;
-static int configured = 0;
+static bool KALMAN_FILTER = KALMAN_NOT_CONFIGURED;
 static QueueHandle_t raw_imu_queue = NULL;
 static QueueHandle_t tilt_angle_queue = NULL;
 
-void kalman_filter_set_receive_queue(QueueHandle_t queue1) {
-    raw_imu_queue = queue1;
-    configured++;
-}
-void kalman_filter_set_send_queue(QueueHandle_t queue2) {
-    tilt_angle_queue = queue2;
-    configured++;
-}
-
-// Kalman filter needs initial angle guess, to be determined by physical build angle when on kickstand
-void kalman_filter_config(float initial_angle) {
+void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float initial_angle){
+    raw_imu_queue = raw_queue;
+    tilt_angle_queue = angle_queue;
     kf.angle = initial_angle;
     kf.bias = 0.0f;
     kf.P[0][0] = 0.0f;
     kf.P[0][1] = 0.0f;
     kf.P[1][0] = 0.0f;
     kf.P[1][1] = 0.0f;
-    configured++;
+    KALMAN_FILTER = KALMAN_CONFIGURED;
 }
 
 static void kalman_filter_update(float angle_measured, float rate_measured, float dt) {
@@ -57,8 +49,8 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
 }
 
 void kalman_filter_step(float dt) {
-    if (!(configured == 3)){
-        ESP_LOGE(TAG_Kalman, "Not properly set up: %d / 3 configured", configured); // Return immedietly if the kalman filter is not fully configured
+    if (KALMAN_FILTER == KALMAN_NOT_CONFIGURED){
+        ESP_LOGE(TAG_Kalman, "Not properly set up: %d / 1 configured", KALMAN_FILTER); // Return immedietly if the kalman filter is not fully configured
         return;
     }
     if (raw_imu_queue == NULL) return; // Return immedietly if the queue is empty

@@ -7,10 +7,16 @@
 #include "esp_log.h"
 #include <inttypes.h>
 
+typedef enum {
+    PID_NOT_CONFIGURED = false,
+    PID_CONFIGURED = true
+} pid_config_state_t;
+
+
+
 extern const char *TAG_pid;
 
-void pid_set_receive_queue(QueueHandle_t queue1);
-void pid_set_send_queue(QueueHandle_t queue2);
+void pid_config(QueueHandle_t send_queue, QueueHandle_t receive_queue);
 void pid_compute(float setpoint);
 
 #endif
