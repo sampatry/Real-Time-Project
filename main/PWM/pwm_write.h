@@ -20,6 +20,7 @@ void pwm_set_receive_queue(QueueHandle_t queue1);
 void PWM_output_update(TimerHandle_t xTimer);
 
 // Function to initialize PWM output
-void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO);
+void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ);
+
 
 #endif
