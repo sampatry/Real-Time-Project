@@ -24,6 +24,7 @@ typedef enum {
 void PWM_output_update(TimerHandle_t xTimer);
 
 // Function to initialize PWM output
-void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO, QueueHandle_t receive_queue);
+void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ, QueueHandle_t receive_queue);
+
 
 #endif

@@ -22,32 +22,34 @@ void PWM_output_update(TimerHandle_t xTimer) {
     }
 }
 
-void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO, QueueHandle_t receive_queue) {
+
+void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ, QueueHandle_t receive_queue) {
     // Configure timer for LEDC PWM output
     ledc_timer_config_t timer_conf = {
 		.duty_resolution = LEDC_TIMER_15_BIT,
-		.freq_hz = LEDC_FREQ_HZ,
+		.freq_hz = FREQ_HZ,
 		.speed_mode = LEDC_LOW_SPEED_MODE,
-		.timer_num = LEDC_TIMER_0,
+		.timer_num = TIMER,
 		.clk_cfg = LEDC_AUTO_CLK,
 	};
     ESP_ERROR_CHECK(ledc_timer_config(&timer_conf)); // Apply timer config
 
     // Configure channel for LEDC PWM output
     ledc_channel_config_t ledc_conf = {
-		.channel = LEDC_CHANNEL_0,
+		.channel = CHANNEL,
 		.duty = 0,
-		.gpio_num = PWM_OUTPUT_GPIO,
+		.gpio_num = GPIO,
 		.intr_type = LEDC_INTR_DISABLE,
 		.speed_mode = LEDC_LOW_SPEED_MODE,
-		.timer_sel = LEDC_TIMER_0,
+		.timer_sel = TIMER,
 	};
 	ESP_ERROR_CHECK(ledc_channel_config(&ledc_conf)); //  Apply channel config
 
-    ESP_LOGI(TAG_PWM_LEDC, "PWM output started on GPIO %d", (int)PWM_OUTPUT_GPIO);
+    ESP_LOGI(TAG_PWM_LEDC, "PWM output started on GPIO %d", (int)GPIO);
 
     pwm_output_queue = receive_queue;
 
     PWM_SETUP = PWM_CONFIGURED;
+
     return;
 }
