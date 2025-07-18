@@ -8,9 +8,10 @@
 #include "esp_log.h"
 
 typedef enum {
-    NOT_CONFIGURED = false,
-    CONFIGURED = true,
-} Configuration;
+    KALMAN_NOT_CONFIGURED = false,
+    KALMAN_CONFIGURED = true
+} kalman_config_state_t;
+
 
 extern const char *TAG_Kalman;
 

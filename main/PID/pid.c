@@ -1,7 +1,7 @@
 #include "pid.h"
 
 const char *TAG_pid = "PID calc";
-static bool PID_SETUP = NOT_CONFIGURED;
+static bool PID_SETUP = PID_NOT_CONFIGURED;
 
 // PID parameters (control tuning parameters)
 static float Kp = 30.0f;
@@ -17,13 +17,13 @@ static QueueHandle_t pwm_output_queue = NULL; // Queue for sending pwm signal to
 void pid_config(QueueHandle_t send_queue, QueueHandle_t receive_queue){
     tilt_angle_queue = send_queue;
     pwm_output_queue = receive_queue;
-    PID_SETUP = CONFIGURED;
+    PID_SETUP = PID_CONFIGURED;
 }
 
 
 // PID control from angle to PWM duty
 void pid_compute(float setpoint) {
-    if (PID_SETUP == NOT_CONFIGURED){
+    if (PID_SETUP == PID_NOT_CONFIGURED){
         ESP_LOGE(TAG_pid, "Not properly set up: %d / 2 configured", PID_SETUP); // Return immedietly if the pid is not fully configured
         return;
     }

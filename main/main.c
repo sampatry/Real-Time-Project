@@ -11,6 +11,7 @@
 #define PWM_INPUT_GPIO GPIO_NUM_18
 #define PWM_OUTPUT_GPIO GPIO_NUM_19
 
+
 ledc_channel_t Servo_channel = LEDC_CHANNEL_0; 
 ledc_timer_t Servo_timer = LEDC_TIMER_0; 
 uint32_t Servo_freq_hz = LEDC_FREQ_HZ;
@@ -42,22 +43,16 @@ void pidTask(void* pvParameters) {
     }
 }
 
-void app_main(void)
-{
+void app_main(void){
     rawImuQueue = xQueueCreate(5, sizeof(mpu6050_data_t)); // Create queue to store up to 5 sets of IMU data
     tiltAngleQueue = xQueueCreate(5, sizeof(float)); // Create queue to store up to 5 tilt angles
     pwmOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for pwm output values
 
-    IMU_set_send_queue(rawImuQueue); // Set queue to send IMU data to in g's and deg/s
+    PWM_output_config(PWM_OUTPUT_GPIO, Servo_channel, Servo_timer, Servo_freq_hz,pwmOutputQueue); // Setup PWM output
 
     kalman_config(rawImuQueue, tiltAngleQueue, initial_tilt_angle);
     pid_config(pwmOutputQueue, tiltAngleQueue);
-
-    pwm_set_receive_queue(pwmOutputQueue); // Set queue to receive pwm value
-
-    mpu6050_config(accel_scale, gyro_scale); // Setup MPU6050
-//    PWM_input_config(PWM_INPUT_GPIO); //Setup pwm input
-    PWM_output_config(PWM_OUTPUT_GPIO, Servo_channel, Servo_timer, Servo_freq_hz); // Setup PWM output
+    mpu6050_config(accel_scale, gyro_scale, rawImuQueue);
 
     // Start IMU read timer
     mpu6050Timer = xTimerCreate("MPU6050", pdMS_TO_TICKS(IMU_timer_period_ms), pdTRUE, NULL, IMU_get_data);

@@ -3,17 +3,12 @@
 const char *TAG_PWM_LEDC = "PWM_OUT"; // Tag for identifying LOGI messages
 
 static QueueHandle_t pwm_output_queue = NULL; // Queue for sending pwm signal to pwm output
-static int configured = 0;
-
-void pwm_set_receive_queue(QueueHandle_t queue1) {
-    pwm_output_queue = queue1;
-    configured++;
-}
+static bool PWM_SETUP = PWM_NOT_CONFIGURED;
 
 // Timer function to get and output the PWM signal
 void PWM_output_update(TimerHandle_t xTimer) {
-    if (!(configured == 2)){
-        ESP_LOGE(TAG_PWM_LEDC, "Not properly set up: %d / 2 configured", configured); // Return immedietly if the pwm output is not fully configured
+    if (PWM_SETUP == PWM_NOT_CONFIGURED){
+        ESP_LOGE(TAG_PWM_LEDC, "Not properly set up: %d / 2 configured", PWM_SETUP); // Return immedietly if the pwm output is not fully configured
         return;
     }
     if (pwm_output_queue == NULL) return; // Return immediatly if the queue is empty
@@ -27,7 +22,8 @@ void PWM_output_update(TimerHandle_t xTimer) {
     }
 }
 
-void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ) {
+
+void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ, QueueHandle_t receive_queue) {
     // Configure timer for LEDC PWM output
     ledc_timer_config_t timer_conf = {
 		.duty_resolution = LEDC_TIMER_15_BIT,
@@ -50,6 +46,10 @@ void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIM
 	ESP_ERROR_CHECK(ledc_channel_config(&ledc_conf)); //  Apply channel config
 
     ESP_LOGI(TAG_PWM_LEDC, "PWM output started on GPIO %d", (int)GPIO);
-    configured++;
+
+    pwm_output_queue = receive_queue;
+
+    PWM_SETUP = PWM_CONFIGURED;
+
     return;
 }
