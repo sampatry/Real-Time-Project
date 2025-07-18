@@ -1,2 +1,2 @@
-source /home/sam/esp/projects/Project/20250711/Real-Time-Project/build/gdbinit/symbols
-source /home/sam/esp/projects/Project/20250711/Real-Time-Project/build/gdbinit/connect
+source /home/sam/esp/projects/final-project/20250718/Real-Time-Project/build/gdbinit/symbols
+source /home/sam/esp/projects/final-project/20250718/Real-Time-Project/build/gdbinit/connect
