@@ -11,8 +11,6 @@
 #define PWM_INPUT_GPIO GPIO_NUM_18
 #define PWM_OUTPUT_GPIO GPIO_NUM_19
 
-
-
 QueueHandle_t rawImuQueue; // Queue for passing raw IMU data from mpu6050 to kalman
 QueueHandle_t tiltAngleQueue; // Queue for passing tilt angle from kalman to pid
 QueueHandle_t pwmOutputQueue; // Queue for passing pwm signal from pid to pwm output
