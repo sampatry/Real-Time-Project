@@ -1,4 +1,4 @@
-#include "PWM_read.h" // Include custom header
+#include "pwm_read.h" // Include custom header
 
 static const char *TAG = "PWM_IN"; // Tag for identifying LOGI messages
 static gpio_num_t pwm_input_gpio = GPIO_NUM_19; // Default value, will be overwritten

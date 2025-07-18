@@ -7,6 +7,7 @@
 #include "esp_log.h" // For printing tagged debug message (ESP_LOGI)
 #include "driver/ledc.h" // For generating pwm output signals
 #include "freertos/queue.h" // For using freertos queues
+#include <inttypes.h>
 
 #define LEDC_FREQ_HZ 50 // DS3240 expects a PWM period of 20ms aka 50hz
 

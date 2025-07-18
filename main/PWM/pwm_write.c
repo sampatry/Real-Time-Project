@@ -1,4 +1,4 @@
-#include "PWM_write.h"
+#include "pwm_write.h"
 
 const char *TAG_PWM_LEDC = "PWM_OUT"; // Tag for identifying LOGI messages
 
@@ -20,7 +20,7 @@ void PWM_output_update(TimerHandle_t xTimer) {
 
     static int32_t pulse_width_out_us;
     if (xQueueReceive(pwm_output_queue, &pulse_width_out_us, 0) == pdPASS){
-        ESP_LOGI(TAG_PWM_LEDC, "PWM Pulse Width Output: %d us", pulse_width_out_us);
+        ESP_LOGI(TAG_PWM_LEDC, "PWM Pulse Width Output: %" PRId32 " us", pulse_width_out_us);
         uint32_t duty = (pulse_width_out_us * 32767) / 20000;
         ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
         ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
@@ -49,7 +49,7 @@ void PWM_output_config(gpio_num_t PWM_OUTPUT_GPIO) {
 	};
 	ESP_ERROR_CHECK(ledc_channel_config(&ledc_conf)); //  Apply channel config
 
-    ESP_LOGI(TAG_PWM_LEDC, "PWM output started on GPIO %d", PWM_OUTPUT_GPIO);
+    ESP_LOGI(TAG_PWM_LEDC, "PWM output started on GPIO %d", (int)PWM_OUTPUT_GPIO);
     configured++;
     return;
 }

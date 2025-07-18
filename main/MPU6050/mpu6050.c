@@ -1,4 +1,4 @@
-#include "mpu6050_v2.h"
+#include "mpu6050.h"
 
 const char *TAG_MPU6050 = "MPU6050";
 static i2c_master_bus_handle_t i2c_bus_handle = NULL;

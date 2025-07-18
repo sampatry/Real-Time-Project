@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "mpu6050_v2.h"
-#include "PWM_read.h"
-#include "PWM_write.h"
-#include "Kalman_filter.h"
+#include "mpu6050.h"
+#include "pwm_read.h"
+#include "pwm_write.h"
+#include "kalman.h"
 #include "pid.h"
 
 void app_main(void)

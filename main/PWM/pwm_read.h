@@ -10,6 +10,7 @@
 #include "esp_timer.h" // For accurate timing of PWM input reading (xTaskGetTickCount() is limited to ms not us)
 #include "esp_log.h" // For use of ESP_LOG functions (ESP_LOGI, ESP_LOGE)
 #include <stdint.h> // For use of int64_t
+#include "esp_attr.h" //Required for IRAM_ATTR
 
 // Function to initialize the PWM input capture ISR
 void PWM_input_config(gpio_num_t PWM_INPUT_GPIO);

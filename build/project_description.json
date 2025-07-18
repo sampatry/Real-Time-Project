@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "Real-Time-Project",
-    "project_version":    "6226dc0-dirty",
+    "project_version":    "f3dfaf2-dirty",
     "project_path":       "/home/sam/esp/projects/final-project/20250718/Real-Time-Project",
     "idf_path":           "/home/sam/esp/esp-idf",
     "build_dir":          "/home/sam/esp/projects/final-project/20250718/Real-Time-Project/build",

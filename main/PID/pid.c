@@ -48,10 +48,10 @@ void pid_compute(float setpoint) {
         // Add direction control
         if (output <0) {
             pwm_output = -pwm_output; // Reverse direction if output is negative
-            ESP_LOGI(TAG_pid, "Reversing direction, PWM duty: %d\n", pwm_output);
+            ESP_LOGI(TAG_pid, "Reversing direction, PWM duty: %" PRId32, pwm_output);
         }
         else {
-            ESP_LOGI(TAG_pid, "Forward direction, PWM duty: %d\n", pwm_output);
+            ESP_LOGI(TAG_pid, "Forward direction, PWM duty: %" PRId32, pwm_output);
         }
         xQueueSend(pwm_output_queue, &pwm_output, 0); //  Sends pid calulated pwm to queue
     }

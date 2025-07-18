@@ -1,7 +1,7 @@
 #ifndef KALMAN_FILTER_H
 #define KALMAN_FILTER_H
 
-#include "mpu6050_v2.h"
+#include "mpu6050.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include <math.h> // For use of atan2f
