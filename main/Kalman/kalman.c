@@ -56,11 +56,21 @@ void kalman_filter_step(float dt) {
     if (raw_imu_queue == NULL) return; // Return immedietly if the queue is empty
 
     mpu6050_data_t imu_data_in;
-    if (xQueueReceive(raw_imu_queue, &imu_data_in, 0) == pdPASS) {
+    if (xQueueReceive(raw_imu_queue, &imu_data_in, portMAX_DELAY) == pdPASS) {
         float acc_angle = atan2f(imu_data_in.accel_y, imu_data_in.accel_z) * RAD_TO_DEG;
         float rate = imu_data_in.gyro_y;  // already in degrees/sec
         kalman_filter_update(acc_angle, rate, dt); //Calculate the new tilt angle
-        ESP_LOGI(TAG_Kalman, "Calculated tilt angle: %.2f", kf.angle);
+        ESP_LOGI(TAG_Kalman, "Calculated tilt angle: %.2f, dt: %.6f", kf.angle, dt);
         xQueueSend(tilt_angle_queue, &kf.angle, 0); //sends filtered tilt angle to the queue
+    }
+}
+
+void KalmanTask(void* pvParameters) {
+    TickType_t previous_ticks = xTaskGetTickCount();
+    while(1){
+        TickType_t current_ticks = xTaskGetTickCount(); // Get current tick since startup
+        float dt_seconds = (float)(current_ticks - previous_ticks) * portTICK_PERIOD_MS / 1000.0f; // Convert Ticks to change in time (should be the same as MPU timer but this makes sure)
+        previous_ticks = current_ticks; // Update previous ticks value
+        kalman_filter_step(dt_seconds); // Update tilt angle estimate
     }
 }

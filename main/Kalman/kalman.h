@@ -24,5 +24,6 @@ typedef struct {
 
 void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float initial_angle);
 void kalman_filter_step(float dt);
+void KalmanTask(void* pvParameters);
 
 #endif
