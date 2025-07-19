@@ -48,14 +48,13 @@ void app_main(void){
     tiltAngleQueue = xQueueCreate(5, sizeof(float)); // Create queue to store up to 5 tilt angles
     pwmOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for pwm output values
 
-    PWM_output_config(PWM_OUTPUT_GPIO, Servo_channel, Servo_timer, Servo_freq_hz,pwmOutputQueue); // Setup PWM output
-
+    ESP_ERROR_CHECK(mpu6050_config(accel_scale, gyro_scale, rawImuQueue));
     kalman_config(rawImuQueue, tiltAngleQueue, initial_tilt_angle);
     pid_config(pwmOutputQueue, tiltAngleQueue);
-    mpu6050_config(accel_scale, gyro_scale, rawImuQueue);
+    PWM_output_config(PWM_OUTPUT_GPIO, Servo_channel, Servo_timer, Servo_freq_hz,pwmOutputQueue); // Setup PWM output
 
     // Start IMU read timer
-    mpu6050Timer = xTimerCreate("MPU6050", pdMS_TO_TICKS(IMU_timer_period_ms), pdTRUE, NULL, IMU_get_data);
+    mpu6050Timer = xTimerCreate("MPU6050", pdMS_TO_TICKS(IMU_timer_period_ms), pdTRUE, NULL, IMU_timer);
     if (mpu6050Timer == NULL || xTimerStart(mpu6050Timer, 0) != pdPASS) {
         ESP_LOGE(TAG_MPU6050, "Failed to create/start MPU6050 timer");
     }

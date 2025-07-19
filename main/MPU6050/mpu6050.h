@@ -20,7 +20,9 @@
 #define I2C_SCL_PIN    GPIO_NUM_22
 #define I2C_FREQ_HZ    100000
 
-extern const char *TAG_MPU6050;
+#define TAG_MPU6050 "MPU6050"
+
+extern TaskHandle_t imu_handle;
 
 typedef enum {
     MPU6050_NOT_CONFIGURED = false,
@@ -36,6 +38,7 @@ typedef struct {
 
 esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t queue);
 
-void IMU_get_data(TimerHandle_t xTimer);
+void IMU_get_data(void* pvParameters);
+void IMU_timer(TimerHandle_t xTimer);
 
 #endif
