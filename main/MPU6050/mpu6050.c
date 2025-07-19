@@ -96,9 +96,9 @@ void IMU_get_data(void* pvParameters) {
             int16_t gy = (raw_data[10] << 8) | raw_data[11];
             int16_t gz = (raw_data[12] << 8) | raw_data[13];
             // Convert to G's
-            imu_data_out.accel_x = ax / accel_conv[current_accel_scale - 1] - 0.13f; //subtract to correct systematic error from testing
-            imu_data_out.accel_y = ay / accel_conv[current_accel_scale - 1] - 0.02f;
-            imu_data_out.accel_z = az / accel_conv[current_accel_scale - 1] - 0.1f;
+            imu_data_out.accel_x = ax / accel_conv[current_accel_scale - 1];
+            imu_data_out.accel_y = ay / accel_conv[current_accel_scale - 1];
+            imu_data_out.accel_z = az / accel_conv[current_accel_scale - 1];
             // Convert to deg/s
             imu_data_out.gyro_x = gx / gyro_conv[current_gyro_scale - 1];
             imu_data_out.gyro_y = gy / gyro_conv[current_gyro_scale - 1];
@@ -117,6 +117,7 @@ void IMU_get_data(void* pvParameters) {
     }
 }
 
+// Timer callback to trigger task (needed due to size of task)
 void IMU_timer(TimerHandle_t xTimer) {
     xTaskNotifyGive(imu_handle);
 }
