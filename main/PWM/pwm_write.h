@@ -9,8 +9,6 @@
 #include "freertos/queue.h" // For using freertos queues
 #include <inttypes.h>
 
-#define LEDC_FREQ_HZ 50 // DS3240 expects a PWM period of 20ms aka 50hz
-
 extern const char *TAG_PWM_LEDC;
 
 typedef enum {
@@ -18,13 +16,19 @@ typedef enum {
     PWM_CONFIGURED = true
 } pwm_config_state_t;
 
-
+typedef struct {
+    gpio_num_t GPIO;
+    ledc_channel_t CHANNEL;
+    ledc_timer_t TIMER;
+    uint32_t FREQ_HZ;
+    QueueHandle_t QUEUE;
+} motor_config_t;
 
 // Timer to output the PWM signal
-void PWM_output_update(TimerHandle_t xTimer);
+void PWM_output_update(void* pvParameters);
 
 // Function to initialize PWM output
-void PWM_output_config(gpio_num_t GPIO, ledc_channel_t CHANNEL, ledc_timer_t TIMER, uint32_t FREQ_HZ, QueueHandle_t receive_queue);
+void PWM_output_config(motor_config_t *config);
 
 
 #endif

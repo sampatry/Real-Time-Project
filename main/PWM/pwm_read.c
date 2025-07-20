@@ -3,7 +3,7 @@
 static const char *TAG = "PWM_IN"; // Tag for identifying LOGI messages
 static gpio_num_t pwm_input_gpio = GPIO_NUM_19; // Default value, will be overwritten
 
-// Volatile variables shared with ISR
+// Volatile variables updated in ISR and used elsewhere
 static volatile int64_t rise_time_us = 0; // 64 bit intead of standard 32 to avoid overflow
 static volatile int64_t pulse_width_us = 0; // 64 bit intead of standard 32 to avoid overflow
 

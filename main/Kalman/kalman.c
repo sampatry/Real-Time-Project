@@ -26,12 +26,12 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
     float rate = rate_measured - kf.bias;
     kf.angle += dt * rate;
 
-    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + 0.001f);
+    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + 0.003f); // Alter float addition value to change response
     kf.P[0][1] -= dt * kf.P[1][1];
     kf.P[1][0] -= dt * kf.P[1][1];
-    kf.P[1][1] += 0.003f * dt;
+    kf.P[1][1] += 0.003f * dt; // Alter float addition value to change response
 
-    float S = kf.P[0][0] + 0.03f;
+    float S = kf.P[0][0] + 0.001f; // Alter float addition value to change response
     float K0 = kf.P[0][0] / S;
     float K1 = kf.P[1][0] / S;
 
@@ -51,9 +51,8 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
 void kalman_filter_step(float dt) {
     if (KALMAN_FILTER == KALMAN_NOT_CONFIGURED){
         ESP_LOGE(TAG_Kalman, "Not properly set up: %d / 1 configured", KALMAN_FILTER); // Return immedietly if the kalman filter is not fully configured
-        return;
+        vTaskDelete(NULL); // Deletes itself since it wasn't configured correctly
     }
-    if (raw_imu_queue == NULL) return; // Return immedietly if the queue is empty
 
     mpu6050_data_t imu_data_in;
     if (xQueueReceive(raw_imu_queue, &imu_data_in, portMAX_DELAY) == pdPASS) {
