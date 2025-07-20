@@ -9,8 +9,8 @@
 #define gyro_scale 1
 
 #define PWM_INPUT_GPIO GPIO_NUM_18
-#define DC_MOTOR_OUTPUT_GPIO GPIO_NUM_19
-#define SERVO_MOTOR_OUTPUT_GPIO GPIO_NUM_5
+#define DC_MOTOR_PWM_GPIO GPIO_NUM_19
+#define SERVO_MOTOR_PWM_GPIO GPIO_NUM_5
 #define DC_MOTOR_FREQ_HZ 1000
 #define SERVO_FREQ_HZ 50 // DS3240 servo expects a PWM period of 20ms aka 50hz
 
@@ -20,16 +20,28 @@ static QueueHandle_t tiltAngleQueue; // Queue for passing tilt angle from kalman
 static QueueHandle_t dcMotorOutputQueue; // Queue for passing pwm signal from pid to pwm output
 static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid to pwm output
 
+PID_t pid_gains = {
+    .Kp = 30.0f,
+    .Ki = 0.01f,
+    .Kd = 15.0f
+};
+motor_driver_config_t left_motor = {
+    .OUT1 = GPIO_NUM_32,
+    .OUT2 = GPIO_NUM_33,
+};
+motor_driver_config_t right_motor = {
+    .OUT1 = GPIO_NUM_25,
+    .OUT2 = GPIO_NUM_26,
+};
 motor_config_t DC_motor = {
-    .GPIO = DC_MOTOR_OUTPUT_GPIO,
+    .GPIO = DC_MOTOR_PWM_GPIO,
     .CHANNEL = LEDC_CHANNEL_0,
     .TIMER = LEDC_TIMER_0,
     .FREQ_HZ = DC_MOTOR_FREQ_HZ,
     .QUEUE = NULL
 };
-
 motor_config_t Servo_motor = {
-    .GPIO = SERVO_MOTOR_OUTPUT_GPIO,
+    .GPIO = SERVO_MOTOR_PWM_GPIO,
     .CHANNEL = LEDC_CHANNEL_1,
     .TIMER = LEDC_TIMER_1,
     .FREQ_HZ = SERVO_FREQ_HZ,
@@ -40,13 +52,6 @@ int32_t pulse_width_out_us = 0;
 int IMU_timer_period_ms = 100;
 int PWM_output_period_ms = 10;
 float initial_tilt_angle = 90.0f;
-
-// Task: Waits for angle data and controls PWM (might have to change to timer to avoid overload of cpu)
-void pidTask(void* pvParameters) {
-    while(1){
-        pid_compute(initial_tilt_angle);
-    }
-}
 
 void app_main(void){
     rawImuQueue = xQueueCreate(5, sizeof(mpu6050_data_t)); // Create queue to store up to 5 sets of IMU data
@@ -59,7 +64,7 @@ void app_main(void){
 
     ESP_ERROR_CHECK(mpu6050_config(accel_scale, gyro_scale, rawImuQueue));
     kalman_config(rawImuQueue, tiltAngleQueue, initial_tilt_angle);
-    pid_config(tiltAngleQueue, dcMotorOutputQueue);
+    pid_config(&left_motor, &right_motor, initial_tilt_angle, tiltAngleQueue, dcMotorOutputQueue);
     PWM_output_config(&DC_motor); // Setup DC motor output
     PWM_output_config(&Servo_motor); // Setup servo output
 
@@ -70,7 +75,7 @@ void app_main(void){
     }
 
     xTaskCreate(KalmanTask, "Kalman Update", 2048, NULL, 3, NULL);
-    xTaskCreate(pidTask, "PID_Task", 2048, NULL, 3, NULL);
+    xTaskCreate(pid_compute, "PID_Task", 2048, &pid_gains, 3, NULL);
     xTaskCreate(PWM_output_update, "DC_motor_PWM_update", 2048, &DC_motor, 3, NULL);
     xTaskCreate(PWM_output_update, "Servo_PWM_update", 2048, &Servo_motor, 3, NULL);
 }

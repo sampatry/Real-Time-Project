@@ -7,7 +7,6 @@
 #include "esp_log.h" // For printing tagged debug message (ESP_LOGI)
 #include "driver/ledc.h" // For generating pwm output signals
 #include "freertos/queue.h" // For using freertos queues
-#include <inttypes.h>
 
 extern const char *TAG_PWM_LEDC;
 

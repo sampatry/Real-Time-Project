@@ -7,13 +7,12 @@
 #include <math.h> // For use of atan2f
 #include "esp_log.h"
 
+#define TAG_Kalman "Kalman Filter"
+
 typedef enum {
     KALMAN_NOT_CONFIGURED = false,
     KALMAN_CONFIGURED = true
 } kalman_config_state_t;
-
-
-extern const char *TAG_Kalman;
 
 typedef struct {
     float angle;      // Estimated angle

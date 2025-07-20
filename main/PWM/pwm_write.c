@@ -13,9 +13,11 @@ void PWM_output_update(void* pvParameters) {
     }
 
     while (1){
-        int32_t pulse_width_out_us;
+        uint32_t pulse_width_out_us;
         if (xQueueReceive(config->QUEUE, &pulse_width_out_us, portMAX_DELAY) == pdPASS){
+            ESP_LOGE(TAG_PWM_LEDC, "The pulse width is: %d and the period is: %d", pulse_width_out_us, (1000000/config->FREQ_HZ));
             if (pulse_width_out_us > (1000000/config->FREQ_HZ)){
+                ESP_LOGE(TAG_PWM_LEDC, "The pulse width is greater than the period and has been clamped");
                 pulse_width_out_us = (1000000/config->FREQ_HZ); // If pulse is greater than period set to period length
             }
             ESP_LOGI(TAG_PWM_LEDC, "pulse_width_out_us : %d", pulse_width_out_us);
@@ -27,7 +29,6 @@ void PWM_output_update(void* pvParameters) {
         }
     }
 }
-
 
 void PWM_output_config(motor_config_t *config) {
     // Configure timer for LEDC PWM output
