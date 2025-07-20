@@ -2,8 +2,6 @@
 
 #define RAD_TO_DEG 57.2957795f
 
-const char *TAG_Kalman = "Kalman Filter";
-
 static kalman_filter_t kf;
 static bool KALMAN_FILTER = KALMAN_NOT_CONFIGURED;
 static QueueHandle_t raw_imu_queue = NULL;
