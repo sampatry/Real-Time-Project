@@ -19,24 +19,29 @@ void gpio_init(gpio_num_t pin_num) {
     ESP_ERROR_CHECK(gpio_pulldown_dis(pin_num)); // Disable pull-down on GPIO.
 }
 
-void pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t pwm_queue){
+esp_err_t pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t pwm_queue){
     motor1 = config1;
     motor2 = config2;
     if (motor1 != NULL){
         gpio_init(config1->OUT1);
         gpio_init(config1->OUT2);
         ESP_LOGI(TAG_pid, "Motor 1 configured");
+    }else{
+        ESP_LOGE(TAG_pid, "Motor 1 not configured");
     }
     if (motor2 != NULL){
         gpio_init(config2->OUT1);
         gpio_init(config2->OUT2);
         ESP_LOGI(TAG_pid, "Motor 2 configured");
+    }else{
+        ESP_LOGE(TAG_pid, "Motor 2 not configured");
     }
 
     target_angle = setpoint;
     tilt_angle_queue = angle_queue;
     pwm_output_queue = pwm_queue;
     PID_SETUP = PID_CONFIGURED;
+    return ESP_OK;
 }
 
 // PID control from angle to PWM duty
@@ -60,7 +65,7 @@ void pid_compute(void* pvParameters) {
             // Add direction control
             uint32_t output;
             if (pid_calc < 0) {
-                output = (uint32_t)-pid_calc; // Switch pulse width to positive if calculated as negative and cast to int
+                output = (uint32_t)-(pid_calc - deadzone); // Switch pulse width to positive if calculated as negative and cast to int and add to avoid motor deadzone
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT1, 0));
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT2, 1));
                 ESP_ERROR_CHECK(gpio_set_level(motor2->OUT1, 0));
@@ -69,7 +74,7 @@ void pid_compute(void* pvParameters) {
                 xQueueSend(pwm_output_queue, &output, 0); //  Sends pid calulated pwm to queue
             }
             else {
-                output = (uint32_t)pid_calc; // cast to int
+                output = (uint32_t)pid_calc + deadzone; // cast to int
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT1, 1));
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT2, 0));
                 ESP_ERROR_CHECK(gpio_set_level(motor2->OUT1, 1));

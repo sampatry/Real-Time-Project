@@ -59,8 +59,7 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
     // Set accel and gyro scale
     uint8_t accel_cmd[] = {MPU6050_ACCEL_SCALE, scale_value[accel_scale - 1]};
     uint8_t gyro_cmd[]  = {MPU6050_GYRO_SCALE, scale_value[gyro_scale - 1]};
-    if (i2c_master_transmit(mpu6050_handle, accel_cmd, sizeof(accel_cmd), -1) != ESP_OK ||
-        i2c_master_transmit(mpu6050_handle, gyro_cmd, sizeof(gyro_cmd), -1) != ESP_OK) {
+    if (i2c_master_transmit(mpu6050_handle, accel_cmd, sizeof(accel_cmd), -1) != ESP_OK || i2c_master_transmit(mpu6050_handle, gyro_cmd, sizeof(gyro_cmd), -1) != ESP_OK) {
         ESP_LOGE(TAG_MPU6050, "Failed to set scale");
         return ESP_FAIL;
     }

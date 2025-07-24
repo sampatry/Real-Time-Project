@@ -8,7 +8,7 @@
 #include "driver/ledc.h" // For generating pwm output signals
 #include "freertos/queue.h" // For using freertos queues
 
-extern const char *TAG_PWM_LEDC;
+#define TAG_PWM_LEDC "PWM_OUT"
 
 typedef enum {
     PWM_NOT_CONFIGURED = false,
@@ -27,7 +27,7 @@ typedef struct {
 void PWM_output_update(void* pvParameters);
 
 // Function to initialize PWM output
-void PWM_output_config(motor_config_t *config);
+esp_err_t PWM_output_config(motor_config_t *config);
 
 
 #endif

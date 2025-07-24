@@ -7,10 +7,11 @@
 #include "esp_log.h"
 
 #define TAG_pid "PID calc"
-#define GPIO_OUT1 = NULL;
-#define GPIO_OUT2 = NULL;
-#define GPIO_OUT3 = NULL;
-#define GPIO_OUT4 = NULL;
+#define GPIO_OUT1 NULL
+#define GPIO_OUT2 NULL
+#define GPIO_OUT3 NULL
+#define GPIO_OUT4 NULL
+#define deadzone 300
 
 typedef enum {
     PID_NOT_CONFIGURED = false,
@@ -29,7 +30,7 @@ typedef struct {
 } PID_t;
 
 void gpio_init(gpio_num_t pin_num);
-void pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t pwm_queue);
+esp_err_t pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t pwm_queue);
 void pid_compute(void* pvParameters);
 
 #endif

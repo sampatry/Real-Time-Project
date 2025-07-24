@@ -7,7 +7,7 @@ static bool KALMAN_FILTER = KALMAN_NOT_CONFIGURED;
 static QueueHandle_t raw_imu_queue = NULL;
 static QueueHandle_t tilt_angle_queue = NULL;
 
-void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float initial_angle){
+esp_err_t kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float initial_angle){
     raw_imu_queue = raw_queue;
     tilt_angle_queue = angle_queue;
     kf.angle = initial_angle;
@@ -17,6 +17,7 @@ void kalman_config(QueueHandle_t raw_queue, QueueHandle_t angle_queue, float ini
     kf.P[1][0] = 0.0f;
     kf.P[1][1] = 0.0f;
     KALMAN_FILTER = KALMAN_CONFIGURED;
+    return ESP_OK;
 }
 
 static void kalman_filter_update(float angle_measured, float rate_measured, float dt) {
