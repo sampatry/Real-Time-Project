@@ -10,7 +10,8 @@
         "stdio.h": "c",
         "cstdlib": "c",
         "stdint.h": "c",
-        "pwm_read.h": "c"
+        "pwm_read.h": "c",
+        "compare": "c"
     },
     "idf.espIdfPath": "/home/dylan/esp/esp-idf",
     "idf.toolsPath": "/home/dylan/.espressif",

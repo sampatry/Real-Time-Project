@@ -64,7 +64,7 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
         return ESP_FAIL;
     }
     IMU_SETUP=MPU6050_CONFIGURED;
-    if (xTaskCreate(IMU_get_data, "IMU_get_data", 2048, NULL, 3, &imu_handle) != pdPASS){
+    if (xTaskCreate(IMU_get_data, "IMU_get_data", 4096, NULL, 3, &imu_handle) != pdPASS){
         ESP_LOGE(TAG_MPU6050, "Failed to create IMU task");
         return ESP_FAIL;
     }

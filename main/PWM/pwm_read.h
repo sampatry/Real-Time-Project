@@ -25,6 +25,9 @@ typedef struct {
     bool digital;
     bool servo;
     QueueHandle_t QUEUE;
+    int64_t rise_time_us;
+    int64_t pulse_width_us;
+    int64_t last_pulse_width;
 } RX_config_t;
 
 // Function to initialize the PWM input capture ISR

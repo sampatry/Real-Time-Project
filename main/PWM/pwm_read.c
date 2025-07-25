@@ -1,8 +1,5 @@
 #include "pwm_read.h" // Include custom header
 
-static int64_t rise_time_us = 0; // 64 bit intead of standard 32 to avoid overflow
-static int64_t pulse_width_us = 0; // 64 bit intead of standard 32 to avoid overflow
-
 // ISR to capture rising/falling edges of PWM signal
 static void IRAM_ATTR PWM_gpio_isr_handler(void* pvParameters) {
     RX_config_t *config = (RX_config_t *) pvParameters; // Convert the config back from void *
@@ -13,22 +10,26 @@ static void IRAM_ATTR PWM_gpio_isr_handler(void* pvParameters) {
     if(config->digital != true){ // Check if gpio is set for pulse width or just digital value tracking
         if (level == 1) { // Rising edge
             // Store pulse start time
-            rise_time_us = now;
+            config->rise_time_us = now;
         } else { // Falling edge
             // Calculte time from rising edge until now
-            pulse_width_us = now - rise_time_us;
-        }
-        if(config->servo == true){
-            pulse_width_us = ((pulse_width_us - ER5A_V2_PWM_MIN) * (SERVO_PWM_MAX - SERVO_PWM_MIN)) / (ER5A_V2_PWM_MAX - ER5A_V2_PWM_MIN) + SERVO_PWM_MIN; // Map ER5A-V2 pwm range to servo range
-            if(pulse_width_us < ((SERVO_PWM_MAX - SERVO_PWM_MIN) / 2)){
-                pulse_width_us = SERVO_PWM_MIN;
-            }else if(pulse_width_us > (SERVO_PWM_MAX - SERVO_PWM_MIN)){
-                pulse_width_us = SERVO_PWM_MAX;
-            }else{
-                pulse_width_us = (SERVO_PWM_MAX + SERVO_PWM_MIN) / 2;
+            config->pulse_width_us = now - config->rise_time_us;
+        
+            if(config->servo == true){
+                config->pulse_width_us = ((config->pulse_width_us - ER5A_V2_PWM_MIN) * (SERVO_PWM_MAX - SERVO_PWM_MIN)) / (ER5A_V2_PWM_MAX - ER5A_V2_PWM_MIN) + SERVO_PWM_MIN; // Map ER5A-V2 pwm range to servo range
+                if(config->pulse_width_us < ((SERVO_PWM_MAX - SERVO_PWM_MIN) / 2)){
+                    config->pulse_width_us = 700;
+                }else if(config->pulse_width_us > (SERVO_PWM_MAX - SERVO_PWM_MIN)){
+                    config->pulse_width_us = 2300;
+                }else{
+                    config->pulse_width_us = (SERVO_PWM_MAX + SERVO_PWM_MIN) / 2;
+                }
             }
         }
-        xQueueSendFromISR(config->QUEUE, &pulse_width_us, &xHigherPriorityTaskWoken); // Sends pulse width to respective queue
+        if(config->pulse_width_us != config->last_pulse_width){
+            config->last_pulse_width = config->pulse_width_us;
+            xQueueSendFromISR(config->QUEUE, &config->pulse_width_us, &xHigherPriorityTaskWoken); // Sends pulse width to respective queue
+        }
     }else{
         xQueueSendFromISR(config->QUEUE, &level, &xHigherPriorityTaskWoken); // Sends digital value to respective queue
     }

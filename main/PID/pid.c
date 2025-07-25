@@ -51,16 +51,21 @@ void pid_compute(void* pvParameters) {
         ESP_LOGE(TAG_pid, "Not properly set up: %d / 2 configured", PID_SETUP); // Return immedietly if the pid is not fully configured
         vTaskDelete(NULL); // Deletes itself since it wasn't configured correctly
     }
+    float dt = 0.0f;
+    int64_t now = 0;
+    int64_t previous_time = 0;
     float angle;
     while(1){
         if (xQueueReceive(tilt_angle_queue, &angle, portMAX_DELAY) == pdPASS) {
-
+            now = esp_timer_get_time(); // 64 bit intead of standard 32 to avoid overflow after ~35 min (probably overkill but better safe than sorry)
+            dt = (float)(now - previous_time) / 1000000.0; // Get change in seconds
+            previous_time = now; //Update previous time for the next loop
             float error = target_angle - angle;
-            integral += error;
-            float derivative = error - last_error;
+            integral += error * dt;
+            float derivative = (error - last_error) / dt;
             last_error = error;
             float pid_calc = gain->Kp * error + gain->Ki * integral + gain->Kd * derivative;//PID output is the control signal
-            ESP_LOGE(TAG_pid, "error: %f, derivative: %f, integral: %f, pid calc: %f", error, derivative, integral, pid_calc);
+            ESP_LOGE(TAG_pid, "error: %f, derivative: %f, integral: %f, pid calc: %f, dt: %f", error, derivative, integral, pid_calc, dt);
 
             // Add direction control
             uint32_t output;

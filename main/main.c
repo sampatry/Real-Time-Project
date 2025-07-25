@@ -22,13 +22,12 @@ static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid 
 
 int32_t pulse_width_out_us = 0;
 int IMU_timer_period_ms = 10;
-//int PWM_output_period_ms = 10;
-float initial_tilt_angle = 90.0f;
+float initial_tilt_angle = 91.0f;
 
 PID_t pid_gains = {
-    .Kp = 15.0f,
-    .Ki = 0.01f,
-    .Kd = 17.0f
+    .Kp = 4.0f,
+    .Ki = 0.0f,
+    .Kd = 1.0f
 };
 motor_driver_config_t left_motor = {
     .OUT1 = GPIO_NUM_32,
@@ -56,7 +55,10 @@ RX_config_t Joystick_Control = {
     .GPIO = JOYSTICK_INPUT_GPIO,
     .digital = false,
     .servo = true, //only for testing, joystick is really for angle setpoint control
-    .QUEUE = NULL
+    .QUEUE = NULL,
+    .rise_time_us = 0,
+    .pulse_width_us = 0,
+    .last_pulse_width = 0
 };
 
 void app_main(void){
@@ -83,7 +85,7 @@ void app_main(void){
         ESP_LOGE(TAG_MPU6050, "Failed to create/start MPU6050 timer");
     }
 
-    if(xTaskCreate(KalmanTask, "Kalman Update", 2048, NULL, 3, NULL) != pdPASS){
+    if(xTaskCreate(KalmanTask, "Kalman Update", 4096, NULL, 3, NULL) != pdPASS){
         ESP_LOGE(TAG_Kalman, "Failed to create/start Kalman Update");
     }
     if(xTaskCreate(pid_compute, "PID_Task", 2048, &pid_gains, 3, NULL) != pdPASS){
