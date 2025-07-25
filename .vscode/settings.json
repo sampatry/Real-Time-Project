@@ -8,7 +8,9 @@
         "pwm_write.h": "c",
         "mpu6050.h": "c",
         "stdio.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "stdint.h": "c",
+        "pwm_read.h": "c"
     },
     "idf.espIdfPath": "/home/dylan/esp/esp-idf",
     "idf.toolsPath": "/home/dylan/.espressif",

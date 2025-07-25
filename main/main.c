@@ -8,7 +8,7 @@
 #define accel_scale 1
 #define gyro_scale 1
 
-#define PWM_INPUT_GPIO GPIO_NUM_18
+#define JOYSTICK_INPUT_GPIO GPIO_NUM_18
 #define DC_MOTOR_PWM_GPIO GPIO_NUM_19
 #define SERVO_MOTOR_PWM_GPIO GPIO_NUM_5
 #define DC_MOTOR_FREQ_HZ 1000
@@ -21,8 +21,8 @@ static QueueHandle_t dcMotorOutputQueue; // Queue for passing pwm signal from pi
 static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid to pwm output
 
 int32_t pulse_width_out_us = 0;
-int IMU_timer_period_ms = 100;
-int PWM_output_period_ms = 10;
+int IMU_timer_period_ms = 10;
+//int PWM_output_period_ms = 10;
 float initial_tilt_angle = 90.0f;
 
 PID_t pid_gains = {
@@ -52,6 +52,12 @@ motor_config_t Servo_motor = {
     .FREQ_HZ = SERVO_FREQ_HZ,
     .QUEUE = NULL
 };
+RX_config_t Joystick_Control = {
+    .GPIO = JOYSTICK_INPUT_GPIO,
+    .digital = false,
+    .servo = true, //only for testing, joystick is really for angle setpoint control
+    .QUEUE = NULL
+};
 
 void app_main(void){
     rawImuQueue = xQueueCreate(5, sizeof(mpu6050_data_t)); // Create queue to store up to 5 sets of IMU data
@@ -59,14 +65,17 @@ void app_main(void){
     dcMotorOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for DC motor output values
     servoOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for DC motor output values
 
-    DC_motor.QUEUE = dcMotorOutputQueue;
-    Servo_motor.QUEUE = servoOutputQueue;
+    Joystick_Control.QUEUE = servoOutputQueue; // Set queue for writing joystick pulse width ---------------------------temporary for testing, joystick is for adjusting pid target
+    DC_motor.QUEUE = dcMotorOutputQueue;  // Set queue for reading DC motor pulse width
+    Servo_motor.QUEUE = servoOutputQueue; // Set queue for reading pulse width
 
+    
     ESP_ERROR_CHECK(mpu6050_config(accel_scale, gyro_scale, rawImuQueue));
     ESP_ERROR_CHECK(kalman_config(rawImuQueue, tiltAngleQueue, initial_tilt_angle));
     ESP_ERROR_CHECK(pid_config(&left_motor, &right_motor, initial_tilt_angle, tiltAngleQueue, dcMotorOutputQueue));
     ESP_ERROR_CHECK(PWM_output_config(&DC_motor)); // Setup DC motor output
     ESP_ERROR_CHECK(PWM_output_config(&Servo_motor)); // Setup servo output
+    ESP_ERROR_CHECK(PWM_input_config(&Joystick_Control));
 
     // Start IMU read timer
     mpu6050Timer = xTimerCreate("MPU6050", pdMS_TO_TICKS(IMU_timer_period_ms), pdTRUE, NULL, IMU_timer);
@@ -76,14 +85,14 @@ void app_main(void){
 
     if(xTaskCreate(KalmanTask, "Kalman Update", 2048, NULL, 3, NULL) != pdPASS){
         ESP_LOGE(TAG_Kalman, "Failed to create/start Kalman Update");
-    };
+    }
     if(xTaskCreate(pid_compute, "PID_Task", 2048, &pid_gains, 3, NULL) != pdPASS){
         ESP_LOGE(TAG_pid, "Failed to create/start PID_Task");
-    };
+    }
     if(xTaskCreate(PWM_output_update, "DC_motor_PWM_update", 2048, &DC_motor, 3, NULL) != pdPASS){
-        ESP_LOGE(TAG_PWM_LEDC, "Failed to create/start DC_motor_PWM_update");
-    };
+        ESP_LOGE(TAG_PWM_WRITE, "Failed to create/start DC_motor_PWM_update");
+    }
     if(xTaskCreate(PWM_output_update, "Servo_PWM_update", 2048, &Servo_motor, 3, NULL) != pdPASS){
-        ESP_LOGE(TAG_PWM_LEDC, "Failed to create/start Servo_PWM_update");
-    };
+        ESP_LOGE(TAG_PWM_WRITE, "Failed to create/start Servo_PWM_update");
+    }
 }
