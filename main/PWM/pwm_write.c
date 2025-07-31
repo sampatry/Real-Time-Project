@@ -18,7 +18,7 @@ void PWM_output_update(void* pvParameters) {
                 //ESP_LOGE(TAG_PWM_WRITE, "The pulse width is greater than the period and has been clamped");
                 pulse_width_out_us = (1000000/config->FREQ_HZ); // If pulse is greater than period set to period length
             }
-            ESP_LOGI(TAG_PWM_WRITE, "pulse_width_out_us : %d", pulse_width_out_us);
+            ESP_LOGI(TAG_PWM_WRITE, "pulse_width_out_us : %" PRIu32 "", pulse_width_out_us);
             uint32_t duty = (pulse_width_out_us * ((1 << LEDC_TIMER_15_BIT) - 1)) / (1000000/config->FREQ_HZ);
             //ESP_LOGI(TAG_PWM_WRITE, "Duty : %d", duty);
             ESP_LOGI(TAG_PWM_WRITE, "Duty cycle: %.2f%%", ((float)duty * 100.0f) / (float)((1 << LEDC_TIMER_15_BIT) - 1));

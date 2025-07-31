@@ -8,6 +8,8 @@
 #include "driver/ledc.h" // For generating pwm output signals
 #include "freertos/queue.h" // For using freertos queues
 
+#include <inttypes.h>
+
 #define TAG_PWM_WRITE "PWM_OUT"
 
 typedef enum {

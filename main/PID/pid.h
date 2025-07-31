@@ -7,12 +7,14 @@
 #include "esp_log.h"
 #include "esp_timer.h" // For accurate timing of PWM input reading (xTaskGetTickCount() is limited to ms not us)
 
+#include <inttypes.h>
+
 #define TAG_pid "PID calc"
 #define GPIO_OUT1 NULL
 #define GPIO_OUT2 NULL
 #define GPIO_OUT3 NULL
 #define GPIO_OUT4 NULL
-#define deadzone 275
+#define deadzone 275 //og 275
 
 typedef enum {
     PID_NOT_CONFIGURED = false,

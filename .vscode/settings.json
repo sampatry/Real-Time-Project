@@ -13,8 +13,9 @@
         "pwm_read.h": "c",
         "compare": "c"
     },
-    "idf.espIdfPath": "/home/dylan/esp/esp-idf",
-    "idf.toolsPath": "/home/dylan/.espressif",
+    "idf.espIdfPath": "/home/sam/esp/esp-idf",
+    "idf.toolsPath": "/home/sam/.espressif",
     "idf.pythonInstallPath": "/usr/bin/python3",
-    "idf.port": "/dev/ttyUSB0"
+    "idf.port": "/dev/ttyUSB0",
+    "C_Cpp.default.compilerPath": "/home/sam/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc"
 }

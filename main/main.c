@@ -21,13 +21,13 @@ static QueueHandle_t dcMotorOutputQueue; // Queue for passing pwm signal from pi
 static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid to pwm output
 
 int32_t pulse_width_out_us = 0;
-int IMU_timer_period_ms = 10;
+int IMU_timer_period_ms = 100;
 float initial_tilt_angle = 91.0f;
 
 PID_t pid_gains = {
     .Kp = 4.0f,
     .Ki = 0.0f,
-    .Kd = 1.0f
+    .Kd = 0.0f
 };
 motor_driver_config_t left_motor = {
     .OUT1 = GPIO_NUM_32,
