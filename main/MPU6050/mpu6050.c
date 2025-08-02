@@ -108,7 +108,7 @@ void IMU_get_data(void* pvParameters) {
             xQueueSend(raw_imu_queue, &imu_data_out, 0); //sends raw IMU data to the queue
 
             // Debug output
-            ESP_LOGI(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f | Temp: %.2f°C", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z, imu_data_out.temperature);
+            ESP_LOGE(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z);
 
         } else {
             ESP_LOGE(TAG_MPU6050, "Failed to read from MPU6050");

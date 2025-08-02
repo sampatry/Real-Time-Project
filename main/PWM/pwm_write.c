@@ -18,13 +18,12 @@ void PWM_output_update(void* pvParameters) {
                 //ESP_LOGE(TAG_PWM_WRITE, "The pulse width is greater than the period and has been clamped");
                 pulse_width_out_us = (1000000/config->FREQ_HZ); // If pulse is greater than period set to period length
             }
-            ESP_LOGI(TAG_PWM_WRITE, "pulse_width_out_us : %d", pulse_width_out_us);
-            uint32_t duty = (pulse_width_out_us * ((1 << LEDC_TIMER_15_BIT) - 1)) / (1000000/config->FREQ_HZ);
+            //ESP_LOGI(TAG_PWM_WRITE, "pulse_width_out_us : %d", pulse_width_out_us);
+            uint32_t duty = (pulse_width_out_us * ((1 << LEDC_TIMER_10_BIT) - 1)) / (1000000/config->FREQ_HZ);
             //ESP_LOGI(TAG_PWM_WRITE, "Duty : %d", duty);
-            ESP_LOGI(TAG_PWM_WRITE, "Duty cycle: %.2f%%", ((float)duty * 100.0f) / (float)((1 << LEDC_TIMER_15_BIT) - 1));
+            //ESP_LOGI(TAG_PWM_WRITE, "Duty cycle: %.2f%%", ((float)duty * 100.0f) / (float)((1 << LEDC_TIMER_10_BIT) - 1));
             ledc_set_duty(LEDC_LOW_SPEED_MODE, config->CHANNEL, duty);
             ledc_update_duty(LEDC_LOW_SPEED_MODE, config->CHANNEL);
-            vTaskDelay(1);  // Delay for 1 tick to yield CPU
         }
     }
 }
@@ -32,7 +31,7 @@ void PWM_output_update(void* pvParameters) {
 esp_err_t PWM_output_config(motor_config_t *config) {
     // Configure timer for LEDC PWM output
     ledc_timer_config_t timer_conf = {
-		.duty_resolution = LEDC_TIMER_15_BIT,
+		.duty_resolution = LEDC_TIMER_10_BIT,
 		.freq_hz = config->FREQ_HZ,
 		.speed_mode = LEDC_LOW_SPEED_MODE,
 		.timer_num = config->TIMER,

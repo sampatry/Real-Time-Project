@@ -11,7 +11,7 @@
 #define JOYSTICK_INPUT_GPIO GPIO_NUM_18
 #define DC_MOTOR_PWM_GPIO GPIO_NUM_19
 #define SERVO_MOTOR_PWM_GPIO GPIO_NUM_5
-#define DC_MOTOR_FREQ_HZ 1000
+#define DC_MOTOR_FREQ_HZ 2000
 #define SERVO_FREQ_HZ 50 // DS3240 servo expects a PWM period of 20ms aka 50hz
 
 static TimerHandle_t mpu6050Timer; // Timer for polling MPU at desired rate
@@ -22,12 +22,12 @@ static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid 
 
 int32_t pulse_width_out_us = 0;
 int IMU_timer_period_ms = 10;
-float initial_tilt_angle = 91.0f;
+float initial_tilt_angle = 10.0f;
 
 PID_t pid_gains = {
-    .Kp = 4.0f,
+    .Kp = 80.0f,
     .Ki = 0.0f,
-    .Kd = 1.0f
+    .Kd = 0.0f
 };
 motor_driver_config_t left_motor = {
     .OUT1 = GPIO_NUM_32,
@@ -62,10 +62,10 @@ RX_config_t Joystick_Control = {
 };
 
 void app_main(void){
-    rawImuQueue = xQueueCreate(5, sizeof(mpu6050_data_t)); // Create queue to store up to 5 sets of IMU data
-    tiltAngleQueue = xQueueCreate(5, sizeof(float)); // Create queue to store up to 5 tilt angles
-    dcMotorOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for DC motor output values
-    servoOutputQueue = xQueueCreate(5, sizeof(int32_t));// Create a queue for DC motor output values
+    rawImuQueue = xQueueCreate(1, sizeof(mpu6050_data_t)); // Create queue to store up to 5 sets of IMU data
+    tiltAngleQueue = xQueueCreate(1, sizeof(float)); // Create queue to store up to 5 tilt angles
+    dcMotorOutputQueue = xQueueCreate(1, sizeof(int32_t));// Create a queue for DC motor output values
+    servoOutputQueue = xQueueCreate(1, sizeof(int32_t));// Create a queue for DC motor output values
 
     Joystick_Control.QUEUE = servoOutputQueue; // Set queue for writing joystick pulse width ---------------------------temporary for testing, joystick is for adjusting pid target
     DC_motor.QUEUE = dcMotorOutputQueue;  // Set queue for reading DC motor pulse width

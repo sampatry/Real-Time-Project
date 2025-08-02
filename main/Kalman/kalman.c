@@ -25,12 +25,12 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
     float rate = rate_measured - kf.bias;
     kf.angle += dt * rate;
 
-    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + 0.003f); // Alter float addition value to change response
+    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + 0.003f); // Alter constant addition value to change response
     kf.P[0][1] -= dt * kf.P[1][1];
     kf.P[1][0] -= dt * kf.P[1][1];
-    kf.P[1][1] += 0.003f * dt; // Alter float addition value to change response
+    kf.P[1][1] += 0.003f * dt; // Alter constant addition value to change response
 
-    float S = kf.P[0][0] + 0.001f; // Alter float addition value to change response
+    float S = kf.P[0][0] + 0.001f; // Alter constant addition value to change response
     float K0 = kf.P[0][0] / S;
     float K1 = kf.P[1][0] / S;
 
@@ -45,6 +45,7 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
     kf.P[0][1] -= K0 * P01_temp;
     kf.P[1][0] -= K1 * P00_temp;
     kf.P[1][1] -= K1 * P01_temp;
+    ESP_LOGI("KF", "kf.angle= %.2f acc= %.2f", kf.angle, angle_measured);
 }
 
 void kalman_filter_step(float dt) {
@@ -55,10 +56,9 @@ void kalman_filter_step(float dt) {
 
     mpu6050_data_t imu_data_in;
     if (xQueueReceive(raw_imu_queue, &imu_data_in, portMAX_DELAY) == pdPASS) {
-        float acc_angle = atan2f(imu_data_in.accel_y, imu_data_in.accel_z) * RAD_TO_DEG;
-        float rate = imu_data_in.gyro_y;  // already in degrees/sec
-        kalman_filter_update(acc_angle, rate, dt); //Calculate the new tilt angle
-        ESP_LOGI(TAG_Kalman, "Calculated tilt angle: %.2f, dt: %.6f", kf.angle, dt);
+        float acc_angle = atan2f(imu_data_in.accel_z, imu_data_in.accel_y) * RAD_TO_DEG;
+        kalman_filter_update(acc_angle, imu_data_in.gyro_x, dt); //Calculate the new tilt angle
+        //ESP_LOGI(TAG_Kalman, "Calculated tilt angle: %.2f, dt: %.6f", kf.angle, dt);
         xQueueSend(tilt_angle_queue, &kf.angle, 0); //sends filtered tilt angle to the queue
     }
 }
@@ -66,7 +66,7 @@ void kalman_filter_step(float dt) {
 void KalmanTask(void* pvParameters) {
     TickType_t previous_ticks = xTaskGetTickCount();
     while(1){
-        TickType_t current_ticks = xTaskGetTickCount(); // Get current tick since startup
+        TickType_t current_ticks = xTaskGetTickCount(); // Get current tick since startup (1 tick is 10ms by default)
         float dt_seconds = (float)(current_ticks - previous_ticks) * portTICK_PERIOD_MS / 1000.0f; // Convert Ticks to change in time (should be the same as MPU timer but this makes sure)
         previous_ticks = current_ticks; // Update previous ticks value
         kalman_filter_step(dt_seconds); // Update tilt angle estimate

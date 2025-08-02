@@ -53,7 +53,7 @@ void pid_compute(void* pvParameters) {
     }
     float dt = 0.0f;
     int64_t now = 0;
-    int64_t previous_time = 0;
+    int64_t previous_time = esp_timer_get_time();
     float angle;
     while(1){
         if (xQueueReceive(tilt_angle_queue, &angle, portMAX_DELAY) == pdPASS) {
@@ -61,30 +61,51 @@ void pid_compute(void* pvParameters) {
             dt = (float)(now - previous_time) / 1000000.0; // Get change in seconds
             previous_time = now; //Update previous time for the next loop
             float error = target_angle - angle;
+            //ESP_LOGI(TAG_pid, "target_angle: %f, angle: %f", target_angle, angle);
             integral += error * dt;
             float derivative = (error - last_error) / dt;
             last_error = error;
             float pid_calc = gain->Kp * error + gain->Ki * integral + gain->Kd * derivative;//PID output is the control signal
-            ESP_LOGE(TAG_pid, "error: %f, derivative: %f, integral: %f, pid calc: %f, dt: %f", error, derivative, integral, pid_calc, dt);
+
+            //ESP_LOGI(TAG_pid, "error: %f, derivative: %f, integral: %f, pid calc: %f, dt: %f", error, derivative, integral, pid_calc, dt);
+            // float pid_calc;
+
+            // if(abs(error) < 3){
+            //     pid_calc = 0;//PID output is the deadzone signal
+            // }
+            // else{
+            //     pid_calc = 10000;//PID output is the deadzone signal
+            // }
+
+            // else if (abs(error) < 3){
+            //     pid_calc = gain->Kp * error + gain->Ki * integral + gain->Kd * derivative;//PID output is the control signal
+            // }else{
+            //     pid_calc = gain->Kp * 2 * error + gain->Ki * integral + gain->Kd * derivative;//PID output is the control signal
+            // }
+            //ESP_LOGI(TAG_pid, "error: %f, pid calc: %f", error, pid_calc);
+            //pid_calc = 0.0;
+
 
             // Add direction control
             uint32_t output;
             if (pid_calc < 0) {
                 output = (uint32_t)-(pid_calc - deadzone); // Switch pulse width to positive if calculated as negative and cast to int and add to avoid motor deadzone
-                ESP_ERROR_CHECK(gpio_set_level(motor1->OUT1, 0));
-                ESP_ERROR_CHECK(gpio_set_level(motor1->OUT2, 1));
-                ESP_ERROR_CHECK(gpio_set_level(motor2->OUT1, 0));
-                ESP_ERROR_CHECK(gpio_set_level(motor2->OUT2, 1));
-                ESP_LOGI(TAG_pid, "Backward direction, pwm output: %d", output);
-                xQueueSend(pwm_output_queue, &output, 0); //  Sends pid calulated pwm to queue
-            }
-            else {
-                output = (uint32_t)pid_calc + deadzone; // cast to int
+                //printf("    pid: %f\n", pid_calc - deadzone);
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT1, 1));
                 ESP_ERROR_CHECK(gpio_set_level(motor1->OUT2, 0));
                 ESP_ERROR_CHECK(gpio_set_level(motor2->OUT1, 1));
                 ESP_ERROR_CHECK(gpio_set_level(motor2->OUT2, 0));
-                ESP_LOGI(TAG_pid, "Forward direction, pwm output: %d", output);
+                //ESP_LOGI(TAG_pid, "Backward direction, pwm output: %d", output);
+                xQueueSend(pwm_output_queue, &output, 0); //  Sends pid calulated pwm to queue
+            }
+            else {
+                output = (uint32_t)pid_calc + deadzone; // cast to int
+                //printf("    pid: %f\n", pid_calc + deadzone);
+                ESP_ERROR_CHECK(gpio_set_level(motor1->OUT1, 0));
+                ESP_ERROR_CHECK(gpio_set_level(motor1->OUT2, 1));
+                ESP_ERROR_CHECK(gpio_set_level(motor2->OUT1, 0));
+                ESP_ERROR_CHECK(gpio_set_level(motor2->OUT2, 1));
+                ;//ESP_LOGI(TAG_pid, "Forward direction, pwm output: %d", output);
                 xQueueSend(pwm_output_queue, &output, 0); //  Sends pid calculated pwm to queue
             }
         }
