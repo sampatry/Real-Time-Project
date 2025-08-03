@@ -14,6 +14,7 @@
 #define MPU6050_REG_ACCEL_XOUT_H   0x3B
 #define MPU6050_ACCEL_SCALE        0x1C
 #define MPU6050_GYRO_SCALE         0x1B
+#define MPU6050_REG_CONFIG         0x1A
 
 #define I2C_PORT       0
 #define I2C_SDA_PIN    GPIO_NUM_21

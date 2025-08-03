@@ -1,6 +1,9 @@
 #include "kalman.h"
 
 #define RAD_TO_DEG 57.2957795f
+#define Q_angle 0.003f
+#define Q_bias 0.003f
+#define R_measure 0.001f
 
 static kalman_filter_t kf;
 static bool KALMAN_FILTER = KALMAN_NOT_CONFIGURED;
@@ -25,12 +28,12 @@ static void kalman_filter_update(float angle_measured, float rate_measured, floa
     float rate = rate_measured - kf.bias;
     kf.angle += dt * rate;
 
-    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + 0.003f); // Alter constant addition value to change response
+    kf.P[0][0] += dt * (dt*kf.P[1][1] - kf.P[0][1] - kf.P[1][0] + Q_angle); // Alter constant addition value to change response
     kf.P[0][1] -= dt * kf.P[1][1];
     kf.P[1][0] -= dt * kf.P[1][1];
-    kf.P[1][1] += 0.003f * dt; // Alter constant addition value to change response
+    kf.P[1][1] += Q_bias * dt; // Alter constant addition value to change response
 
-    float S = kf.P[0][0] + 0.001f; // Alter constant addition value to change response
+    float S = kf.P[0][0] + R_measure; // Alter constant addition value to change response
     float K0 = kf.P[0][0] / S;
     float K1 = kf.P[1][0] / S;
 

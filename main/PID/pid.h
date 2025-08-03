@@ -12,7 +12,7 @@
 #define GPIO_OUT2 NULL
 #define GPIO_OUT3 NULL
 #define GPIO_OUT4 NULL
-#define deadzone 0
+#define deadzone  0
 
 typedef enum {
     PID_NOT_CONFIGURED = false,

@@ -2,7 +2,10 @@
 
 static i2c_master_bus_handle_t i2c_bus_handle = NULL;
 static i2c_master_dev_handle_t mpu6050_handle = NULL;
-
+// Adjust for desired LPF smoothness/responsiveness
+static const float alpha_accel_y = 0.3f;
+static const float alpha_accel_z = 0.1f; 
+static const float alpha_gyro = 0.3f; 
 static const uint8_t scale_value[4]    = {0x00, 0x08, 0x10, 0x18}; // ±2g/4g/8g/16g or ±250/500/1000/2000 dps
 static const float accel_conv[4]       = {16384.0, 8192.0, 4096.0, 2048.0};
 static const float gyro_conv[4]        = {131.0, 65.5, 32.8, 16.4};
@@ -63,6 +66,14 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
         ESP_LOGE(TAG_MPU6050, "Failed to set scale");
         return ESP_FAIL;
     }
+
+    // Set DLPF to max bandwidth (lowest latency)
+    uint8_t dlpf_cmd[] = {MPU6050_REG_CONFIG, 0x03};  // DLPF_CFG for setting mpu6050 built in LPF
+    if (i2c_master_transmit(mpu6050_handle, dlpf_cmd, sizeof(dlpf_cmd), -1) != ESP_OK) {
+        ESP_LOGE(TAG_MPU6050, "Failed to set DLPF config");
+        return ESP_FAIL;
+    }
+
     IMU_SETUP=MPU6050_CONFIGURED;
     if (xTaskCreate(IMU_get_data, "IMU_get_data", 4096, NULL, 3, &imu_handle) != pdPASS){
         ESP_LOGE(TAG_MPU6050, "Failed to create IMU task");
@@ -72,6 +83,9 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
 }
 
 void IMU_get_data(void* pvParameters) {
+    static float prev_ax = 0, prev_ay = 0, prev_az = 0;
+    static float prev_gx = 0, prev_gy = 0, prev_gz = 0;
+
     while (1){
         if (IMU_SETUP == MPU6050_NOT_CONFIGURED){
             ESP_LOGE(TAG_MPU6050, "Not properly set up: %d / 2 configured", IMU_SETUP); // Return immedietly if the mpu6050 is not fully configured
@@ -94,22 +108,31 @@ void IMU_get_data(void* pvParameters) {
             int16_t gx = (raw_data[8] << 8) | raw_data[9];
             int16_t gy = (raw_data[10] << 8) | raw_data[11];
             int16_t gz = (raw_data[12] << 8) | raw_data[13];
+            
+            // Raw conversions
             // Convert to G's
-            imu_data_out.accel_x = ax / accel_conv[current_accel_scale - 1];
-            imu_data_out.accel_y = ay / accel_conv[current_accel_scale - 1];
-            imu_data_out.accel_z = az / accel_conv[current_accel_scale - 1];
+            float ax_g = ax / accel_conv[current_accel_scale - 1];
+            float ay_g = ay / accel_conv[current_accel_scale - 1];
+            float az_g = az / accel_conv[current_accel_scale - 1];
             // Convert to deg/s
-            imu_data_out.gyro_x = gx / gyro_conv[current_gyro_scale - 1];
-            imu_data_out.gyro_y = gy / gyro_conv[current_gyro_scale - 1];
-            imu_data_out.gyro_z = gz / gyro_conv[current_gyro_scale - 1];
+            float gx_dps = gx / gyro_conv[current_gyro_scale - 1];
+            float gy_dps = gy / gyro_conv[current_gyro_scale - 1];
+            float gz_dps = gz / gyro_conv[current_gyro_scale - 1];
 
-            imu_data_out.temperature = (temp_raw / 340.0f) + 36.53f;
+            // Low-pass filter
+            imu_data_out.accel_x = prev_ax = alpha_accel_y * ax_g + (1 - alpha_accel_y) * prev_ax;
+            imu_data_out.accel_y = prev_ay = alpha_accel_y * ay_g + (1 - alpha_accel_y) * prev_ay;
+            imu_data_out.accel_z = prev_az = alpha_accel_z * az_g + (1 - alpha_accel_z) * prev_az;
+
+            imu_data_out.gyro_x = prev_gx = alpha_gyro * gx_dps + (1 - alpha_gyro) * prev_gx;
+            imu_data_out.gyro_y = prev_gy = alpha_gyro * gy_dps + (1 - alpha_gyro) * prev_gy;
+            imu_data_out.gyro_z = prev_gz = alpha_gyro * gz_dps + (1 - alpha_gyro) * prev_gz;
 
             xQueueSend(raw_imu_queue, &imu_data_out, 0); //sends raw IMU data to the queue
 
             // Debug output
-            ESP_LOGE(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z);
-
+            ESP_LOGE(TAG_MPU6050, "Accel: %.2f %.2f | Gyro: %.2f", imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x);
+            //ESP_LOGE(TAG_MPU6050, "Accel: %.2f %.2f %.2f | Gyro: %.2f %.2f %.2f", imu_data_out.accel_x, imu_data_out.accel_y, imu_data_out.accel_z, imu_data_out.gyro_x, imu_data_out.gyro_y, imu_data_out.gyro_z);
         } else {
             ESP_LOGE(TAG_MPU6050, "Failed to read from MPU6050");
         }
