@@ -3,9 +3,8 @@
 static i2c_master_bus_handle_t i2c_bus_handle = NULL;
 static i2c_master_dev_handle_t mpu6050_handle = NULL;
 // Adjust for desired LPF smoothness/responsiveness
-static const float alpha_accel_y = 0.3f;
-static const float alpha_accel_z = 0.1f; 
-static const float alpha_gyro = 0.3f; 
+static const float alpha_accel = 0.1f; 
+static const float alpha_gyro = 0.1f; 
 static const uint8_t scale_value[4]    = {0x00, 0x08, 0x10, 0x18}; // ±2g/4g/8g/16g or ±250/500/1000/2000 dps
 static const float accel_conv[4]       = {16384.0, 8192.0, 4096.0, 2048.0};
 static const float gyro_conv[4]        = {131.0, 65.5, 32.8, 16.4};
@@ -68,7 +67,7 @@ esp_err_t mpu6050_config(uint8_t accel_scale, uint8_t gyro_scale, QueueHandle_t 
     }
 
     // Set DLPF to max bandwidth (lowest latency)
-    uint8_t dlpf_cmd[] = {MPU6050_REG_CONFIG, 0x03};  // DLPF_CFG for setting mpu6050 built in LPF
+    uint8_t dlpf_cmd[] = {MPU6050_REG_CONFIG, 0x06};  // DLPF_CFG for setting mpu6050 built in LPF
     if (i2c_master_transmit(mpu6050_handle, dlpf_cmd, sizeof(dlpf_cmd), -1) != ESP_OK) {
         ESP_LOGE(TAG_MPU6050, "Failed to set DLPF config");
         return ESP_FAIL;
@@ -120,9 +119,9 @@ void IMU_get_data(void* pvParameters) {
             float gz_dps = gz / gyro_conv[current_gyro_scale - 1];
 
             // Low-pass filter
-            imu_data_out.accel_x = prev_ax = alpha_accel_y * ax_g + (1 - alpha_accel_y) * prev_ax;
-            imu_data_out.accel_y = prev_ay = alpha_accel_y * ay_g + (1 - alpha_accel_y) * prev_ay;
-            imu_data_out.accel_z = prev_az = alpha_accel_z * az_g + (1 - alpha_accel_z) * prev_az;
+            imu_data_out.accel_x = prev_ax = alpha_accel * ax_g + (1 - alpha_accel) * prev_ax;
+            imu_data_out.accel_y = prev_ay = alpha_accel * ay_g + (1 - alpha_accel) * prev_ay;
+            imu_data_out.accel_z = prev_az = alpha_accel * az_g + (1 - alpha_accel) * prev_az;
 
             imu_data_out.gyro_x = prev_gx = alpha_gyro * gx_dps + (1 - alpha_gyro) * prev_gx;
             imu_data_out.gyro_y = prev_gy = alpha_gyro * gy_dps + (1 - alpha_gyro) * prev_gy;

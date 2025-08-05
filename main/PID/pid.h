@@ -31,7 +31,7 @@ typedef struct {
 } PID_t;
 
 void gpio_init(gpio_num_t pin_num);
-esp_err_t pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t pwm_queue);
+esp_err_t pid_config(motor_driver_config_t *config1, motor_driver_config_t *config2, float setpoint, QueueHandle_t angle_queue, QueueHandle_t remote_queue, QueueHandle_t DC_queue, QueueHandle_t servo_queue);
 void pid_compute(void* pvParameters);
 
 #endif

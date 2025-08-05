@@ -17,15 +17,16 @@
 static TimerHandle_t mpu6050Timer; // Timer for polling MPU at desired rate
 static QueueHandle_t rawImuQueue; // Queue for passing raw IMU data from mpu6050 to kalman
 static QueueHandle_t tiltAngleQueue; // Queue for passing tilt angle from kalman to pid
-static QueueHandle_t dcMotorOutputQueue; // Queue for passing pwm signal from pid to pwm output
-static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid to pwm output
+static QueueHandle_t dcMotorOutputQueue; // Queue for passing pwm signal from pid to dc motor output
+static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid to servo output
+static QueueHandle_t RemoteControlQueue; // Queue for passing pwm signal from pwm read to pid
 
 int32_t pulse_width_out_us = 0;
 int IMU_timer_period_ms = 10;
 float initial_tilt_angle = 9.3f;
 
 PID_t pid_gains = {
-    .Kp = 500.0f,
+    .Kp = 100.0f,
     .Ki = 0.0f,
     .Kd = 0.0f
 };
@@ -66,15 +67,16 @@ void app_main(void){
     tiltAngleQueue = xQueueCreate(1, sizeof(float)); // Create queue to store up to 5 tilt angles
     dcMotorOutputQueue = xQueueCreate(1, sizeof(int32_t));// Create a queue for DC motor output values
     servoOutputQueue = xQueueCreate(1, sizeof(int32_t));// Create a queue for DC motor output values
+    RemoteControlQueue = xQueueCreate(1, sizeof(int32_t));// Create a queue for remote control pwm
 
-    Joystick_Control.QUEUE = servoOutputQueue; // Set queue for writing joystick pulse width ---------------------------temporary for testing, joystick is for adjusting pid target
+    Joystick_Control.QUEUE = RemoteControlQueue; // Set queue for sending remote control pulse width to pid
     DC_motor.QUEUE = dcMotorOutputQueue;  // Set queue for reading DC motor pulse width
     Servo_motor.QUEUE = servoOutputQueue; // Set queue for reading pulse width
 
     
     ESP_ERROR_CHECK(mpu6050_config(accel_scale, gyro_scale, rawImuQueue));
     ESP_ERROR_CHECK(kalman_config(rawImuQueue, tiltAngleQueue, initial_tilt_angle));
-    ESP_ERROR_CHECK(pid_config(&left_motor, &right_motor, initial_tilt_angle, tiltAngleQueue, dcMotorOutputQueue));
+    ESP_ERROR_CHECK(pid_config(&left_motor, &right_motor, initial_tilt_angle, tiltAngleQueue, Joystick_Control.QUEUE, DC_motor.QUEUE, Servo_motor.QUEUE));
     ESP_ERROR_CHECK(PWM_output_config(&DC_motor)); // Setup DC motor output
     ESP_ERROR_CHECK(PWM_output_config(&Servo_motor)); // Setup servo output
     ESP_ERROR_CHECK(PWM_input_config(&Joystick_Control));
