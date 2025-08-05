@@ -22,11 +22,11 @@ static QueueHandle_t servoOutputQueue; // Queue for passing pwm signal from pid 
 static QueueHandle_t RemoteControlQueue; // Queue for passing pwm signal from pwm read to pid
 
 int32_t pulse_width_out_us = 0;
-int IMU_timer_period_ms = 10;
+int IMU_timer_period_ms = 20;
 float initial_tilt_angle = 9.3f;
 
 PID_t pid_gains = {
-    .Kp = 100.0f,
+    .Kp = 70.0f,
     .Ki = 0.0f,
     .Kd = 0.0f
 };

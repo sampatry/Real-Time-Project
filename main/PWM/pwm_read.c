@@ -17,9 +17,9 @@ static void IRAM_ATTR PWM_gpio_isr_handler(void* pvParameters) {
         
             if(config->servo == true){
                 config->pulse_width_us = ((config->pulse_width_us - ER5A_V2_PWM_MIN) * (SERVO_PWM_MAX - SERVO_PWM_MIN)) / (ER5A_V2_PWM_MAX - ER5A_V2_PWM_MIN) + SERVO_PWM_MIN; // Map ER5A-V2 pwm range to servo range
-                if(config->pulse_width_us < ((SERVO_PWM_MAX - SERVO_PWM_MIN) / 2)){
+                if(config->pulse_width_us < 1200){
                     config->pulse_width_us = 700;
-                }else if(config->pulse_width_us > (SERVO_PWM_MAX - SERVO_PWM_MIN)){
+                }else if(config->pulse_width_us > 1800 && config->pulse_width_us < 3000){
                     config->pulse_width_us = 2300;
                 }else{
                     config->pulse_width_us = (SERVO_PWM_MAX + SERVO_PWM_MIN) / 2;

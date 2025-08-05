@@ -8,8 +8,8 @@ static int Servo_left = 600;
 static int Servo_up = 1500;
 static int Servo_right = 2400;
 static int remote_pulse = 1500;
-static int max_angle_threshold = 12;
-static int min_angle_threshold = 2;
+static int max_angle_threshold = 10;
+static int min_angle_threshold = 1;
 
 static float integral = 0.0f;
 static float last_error = 0.0f;
@@ -95,7 +95,7 @@ void pid_compute(void* pvParameters) {
 
             float pid_calc = gain->Kp * error + gain->Ki * integral + gain->Kd * derivative;
             xQueueReceive(remote_input_queue, &remote_pulse, 0);  // optional read
-
+            ESP_LOGW(TAG_pid, "remote=%d | error=%.2f | pid=%.2f", remote_pulse, error, pid_calc);
             output = 0; // DC motor default off
 
             // === PRIORITY 1: REMOTE OVERRIDE ===
@@ -112,7 +112,7 @@ void pid_compute(void* pvParameters) {
             // === PRIORITY 2: ANGLE CONTROL ===
             // Small deadzone
             if (abs((int)error) < min_angle_threshold) {
-                xQueueSend(DC_output_queue, &output, 0); // No motor
+                xQueueSend(DC_output_queue, &output, 0); // No DC motors
                 xQueueSend(servo_output_queue, &Servo_up, 0); // Neutral
                 continue;
             }
@@ -127,7 +127,7 @@ void pid_compute(void* pvParameters) {
                 xQueueSend(servo_output_queue, &Servo_right, 0);
                 continue;
             }
-
+            //Only if not skipped (continue) by higher priority
             // PID motor control (valid error and remote = 1500)
             if (pid_calc < 0) {
                 output = (uint32_t)(-pid_calc + deadzone);
@@ -139,7 +139,7 @@ void pid_compute(void* pvParameters) {
             xQueueSend(DC_output_queue, &output, 0);
             xQueueSend(servo_output_queue, &Servo_up, 0); // Neutral
 
-            ESP_LOGW(TAG_pid, "remote=%d | error=%.2f | pid=%.2f | out=%d", remote_pulse, error, pid_calc, output);
+            ESP_LOGW(TAG_pid, "out=%d", output);
         }
     }
 }
